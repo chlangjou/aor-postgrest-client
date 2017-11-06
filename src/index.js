@@ -25,34 +25,35 @@ import {
  * DELETE       => DELETE http://my.api.url/posts?id=eq.123
  */
 export default (apiUrl, httpClient = fetchJson) => {
-    const convertFilters = (filters) => {
-        let rest = {};
+  const convertFilters = (filters) => {
+    const rest = {};
 
-        Object.keys(filters).map(function (key) {
-            switch (typeof filters[key]) {
-                case 'string':
-                    rest[key]='ilike.*' + filters[key].replace(/:/,'') + '*';
-                    break;
+    Object.keys(filters).map((key) => {
+      switch (typeof filters[key]) {
+        case 'string':
+          rest[key] = `ilike.*${filters[key].replace(/:/, '')}*`;
+          break;
 
-                case 'boolean':
-                    rest[key]='is.' + filters[key];
-                    break;
+        case 'boolean':
+          rest[key] = `is.${filters[key]}`;
+          break;
 
-                case 'undefined':
-                    rest[key]='is.null';
-                    break;
+        case 'undefined':
+          rest[key] = 'is.null';
+          break;
 
-                case 'number':
-                    rest[key]='eq.' + filters[key];
-                    break;
+        case 'number':
+          rest[key] = `eq.${filters[key]}`;
+          break;
 
-                default:
-                    rest[key]='ilike.*' + filters[key].toString().replace(/:/,'') + '*';
-                    break;
-            }
-        });
-        return rest;
-    }
+        default:
+          rest[key] = `ilike.*${filters[key].toString().replace(/:/, '')}*`;
+          break;
+      }
+      return true;
+    });
+    return rest;
+  };
 
     /**
      * @param {String} type One of the constants appearing at the top if this file, e.g. 'UPDATE'
@@ -60,67 +61,62 @@ export default (apiUrl, httpClient = fetchJson) => {
      * @param {Object} params The REST request params, depending on the type
      * @returns {Object} { url, options } The HTTP request parameters
      */
-    const convertRESTRequestToHTTP = (type, resource, params) => {
-		console.log(type)
-		console.log(params)
-		console.log(params.filter)
-		console.log(resource)
-        let url = '';
-        const options = {};
-		options.headers = new Headers();
-        switch (type) {
-        case GET_LIST: {
-            const { page, perPage } = params.pagination;
-            const { field, order } = params.sort;
-			options.headers.set('Range-Unit','items');
-			options.headers.set('Range',((page-1)*perPage) + '-' + ((page * perPage) -1)   );
-			options.headers.set('Prefer','count=exact');
-			const pf = params.filter;
-            let query = {
-                order: field + '.' +  order.toLowerCase(),
-            };
-			Object.assign(query, convertFilters(params.filter));
-            url = `${apiUrl}/${resource}?${queryParameters(query)}`;
-            break;
-        }
-        case GET_ONE:
-            url = `${apiUrl}/${resource}?id=eq.${params.id}`;
-            break;
-        case GET_MANY: {
-            url = `${apiUrl}/${resource}?id=in.${params.ids.join(',')}`;
-            break;
-        }
-        case GET_MANY_REFERENCE: {
-            const filters = {};
-            const { field, order } = params.sort;
-			filters[params.target] = params.id;
-            let query = {
-                order: field + '.' +  order.toLowerCase(),
-            };
-			Object.assign(query, convertFilters(filters));
-            url = `${apiUrl}/${resource}?${queryParameters(query)}`;
-            break;
-        }
-        case UPDATE:
-            url = `${apiUrl}/${resource}?id=eq.${params.id}`;
-            options.method = 'PATCH';
-            options.body = JSON.stringify(params.data);
-            break;
-        case CREATE:
-            url = `${apiUrl}/${resource}`;
-			options.headers.set('Prefer','return=representation');
-            options.method = 'POST';
-            options.body = JSON.stringify(params.data);
-            break;
-        case DELETE:
-            url = `${apiUrl}/${resource}?id=eq.${params.id}`;
-            options.method = 'DELETE';
-            break;
-        default:
-            throw new Error(`Unsupported fetch action type ${type}`);
-        }
-        return { url, options };
-    };
+  const convertRESTRequestToHTTP = (type, resource, params) => {
+    let url = '';
+    const options = {};
+    options.headers = new Headers();
+    switch (type) {
+      case GET_LIST: {
+        const { page, perPage } = params.pagination;
+        const { field, order } = params.sort;
+        options.headers.set('Range-Unit', 'items');
+        options.headers.set('Range', `${(page - 1) * perPage}-${(page * perPage) - 1}`);
+        options.headers.set('Prefer', 'count=exact');
+        const query = {
+          order: `${field}.${order.toLowerCase()}`,
+        };
+        Object.assign(query, convertFilters(params.filter));
+        url = `${apiUrl}/${resource}?${queryParameters(query)}`;
+        break;
+      }
+      case GET_ONE:
+        url = `${apiUrl}/${resource}?id=eq.${params.id}`;
+        break;
+      case GET_MANY: {
+        url = `${apiUrl}/${resource}?id=in.${params.ids.join(',')}`;
+        break;
+      }
+      case GET_MANY_REFERENCE: {
+        const filters = {};
+        const { field, order } = params.sort;
+        filters[params.target] = params.id;
+        const query = {
+          order: `${field}.${order.toLowerCase()}`,
+        };
+        Object.assign(query, convertFilters(filters));
+        url = `${apiUrl}/${resource}?${queryParameters(query)}`;
+        break;
+      }
+      case UPDATE:
+        url = `${apiUrl}/${resource}?id=eq.${params.id}`;
+        options.method = 'PATCH';
+        options.body = JSON.stringify(params.data);
+        break;
+      case CREATE:
+        url = `${apiUrl}/${resource}`;
+        options.headers.set('Prefer', 'return=representation');
+        options.method = 'POST';
+        options.body = JSON.stringify(params.data);
+        break;
+      case DELETE:
+        url = `${apiUrl}/${resource}?id=eq.${params.id}`;
+        options.method = 'DELETE';
+        break;
+      default:
+        throw new Error(`Unsupported fetch action type ${type}`);
+    }
+    return { url, options };
+  };
 
     /**
      * @param {Object} response HTTP response from fetch()
@@ -129,27 +125,28 @@ export default (apiUrl, httpClient = fetchJson) => {
      * @param {Object} params The REST request params, depending on the type
      * @returns {Object} REST response
      */
-    const convertHTTPResponseToREST = (response, type, resource, params) => {
-        const { headers, json } = response;
-        switch (type) {
-        case GET_LIST:
-        case GET_MANY_REFERENCE:
-            if (!headers.has('content-range')) {
-                throw new Error('The Content-Range header is missing in the HTTP Response. The simple REST client expects responses for lists of resources to contain this header with the total number of results to build the pagination. If you are using CORS, did you declare Content-Range in the Access-Control-Expose-Headers header?');
-            }
-			const maxInPage = parseInt(headers.get('content-range').split('/')[0].split('-').pop(), 10) +1
-            return {
-                data: json.map(x => x),
-                total: parseInt(headers.get('content-range').split('/').pop(), 10) || maxInPage,
-            };
-        case CREATE:
-            return { ...params.data, id: json.id };
-        case UPDATE:
-            return { ...params.data, id: params.id };
-        default:
-            return { data: json };
+  const convertHTTPResponseToREST = (response, type, resource, params) => {
+    const { headers, json } = response;
+    switch (type) {
+      case GET_LIST:
+      case GET_MANY_REFERENCE: {
+        if (!headers.has('content-range')) {
+          throw new Error('The Content-Range header is missing in the HTTP Response. The simple REST client expects responses for lists of resources to contain this header with the total number of results to build the pagination. If you are using CORS, did you declare Content-Range in the Access-Control-Expose-Headers header?');
         }
-    };
+        const maxInPage = parseInt(headers.get('content-range').split('/')[0].split('-').pop(), 10) + 1;
+        return {
+          data: json.map(x => x),
+          total: parseInt(headers.get('content-range').split('/').pop(), 10) || maxInPage,
+        };
+      }
+      case CREATE:
+        return { ...params.data, id: json.id };
+      case UPDATE:
+        return { ...params.data, id: params.id };
+      default:
+        return { data: json };
+    }
+  };
 
     /**
      * @param {string} type Request type, e.g GET_LIST
@@ -157,9 +154,9 @@ export default (apiUrl, httpClient = fetchJson) => {
      * @param {Object} payload Request parameters. Depends on the request type
      * @returns {Promise} the Promise for a REST response
      */
-    return (type, resource, params) => {
-        const { url, options } = convertRESTRequestToHTTP(type, resource, params);
-        return httpClient(url, options)
+  return (type, resource, params) => {
+    const { url, options } = convertRESTRequestToHTTP(type, resource, params);
+    return httpClient(url, options)
             .then(response => convertHTTPResponseToREST(response, type, resource, params));
-    };
+  };
 };

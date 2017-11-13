@@ -1,7 +1,7 @@
 {
-  "name": "@sebastien-cleany/aor-postgrest-client",
-  "version": "0.1.4",
-  "description": "A postgrest client for admin-on-rest",
+  "name": "@turbolent/aor-postgrest-client",
+  "version": "0.2.0",
+  "description": "A PostgREST client for admin-on-rest",
   "main": "lib/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -15,7 +15,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/cleany/aor-postgres-client.git"
+    "url": "git+https://github.com/turbolent/aor-postgres-client.git"
   },
   "keywords": [
     "reactjs",
@@ -25,11 +25,17 @@
     "local"
   ],
   "author": "Thomas Bereknyei",
+  "contributors": [
+    "Sébastien Boulle",
+    "Francois Zaninotto",
+    "Jonathan Petitcolas",
+    "Bastian Müller"
+  ],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/cleany/aor-postgres-client/issues"
+    "url": "https://github.com/turbolent/aor-postgres-client/issues"
   },
-  "homepage": "https://github.com/cleany/aor-postgres-client#readme",
+  "homepage": "https://github.com/turbolent/aor-postgres-client#readme",
   "eslintConfig": {
     "parser": "babel-eslint",
     "extends": "airbnb",
@@ -39,7 +45,7 @@
     }
   },
   "dependencies": {
-    "admin-on-rest": "^0.7.0"
+    "admin-on-rest": "^1.3.2"
   },
   "devDependencies": {
     "babel-cli": "^6.18.0",

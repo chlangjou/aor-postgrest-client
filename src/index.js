@@ -1,4 +1,5 @@
-import { queryParameters, fetchJson } from 'admin-on-rest/lib/util/fetch';
+import { stringify } from 'query-string';
+import { fetchJson } from 'admin-on-rest/lib/util/fetch';
 import {
     GET_LIST,
     GET_ONE,
@@ -55,6 +56,16 @@ export default (apiUrl, httpClient = fetchJson) => {
     return rest;
   };
 
+  const singleResourceUrl = (resource, params) => {
+    const query = {id: `eq.${params.id}`}
+    return `${apiUrl}/${resource}?${stringify(query)}`;
+  }
+
+  const setSingleResponseHeaders = (options) => {
+    options.headers.set('Prefer', 'return=representation');
+    options.headers.set('Accept', 'application/vnd.pgrst.object+json');
+  }
+
     /**
      * @param {String} type One of the constants appearing at the top if this file, e.g. 'UPDATE'
      * @param {String} resource Name of the resource to fetch, e.g. 'posts'
@@ -76,16 +87,16 @@ export default (apiUrl, httpClient = fetchJson) => {
           order: `${field}.${order.toLowerCase()}`,
         };
         Object.assign(query, convertFilters(params.filter));
-        url = `${apiUrl}/${resource}?${queryParameters(query)}`;
+        url = `${apiUrl}/${resource}?${stringify(query)}`;
         break;
       }
       case GET_ONE:
-        url = `${apiUrl}/${resource}?id=eq.${params.id}`;
+        url = singleResourceUrl(resource, params);
+        setSingleResponseHeaders(options);
         break;
-      case GET_MANY: {
-        url = `${apiUrl}/${resource}?id=in.${params.ids.join(',')}`;
+      case GET_MANY:
+        url = `${apiUrl}/${resource}?id=in.(${params.ids.join(',')})`;
         break;
-      }
       case GET_MANY_REFERENCE: {
         const filters = {};
         const { field, order } = params.sort;
@@ -94,22 +105,23 @@ export default (apiUrl, httpClient = fetchJson) => {
           order: `${field}.${order.toLowerCase()}`,
         };
         Object.assign(query, convertFilters(filters));
-        url = `${apiUrl}/${resource}?${queryParameters(query)}`;
+        url = `${apiUrl}/${resource}?${stringify(query)}`;
         break;
       }
       case UPDATE:
-        url = `${apiUrl}/${resource}?id=eq.${params.id}`;
+        url = singleResourceUrl(resource, params);
+        setSingleResponseHeaders(options);
         options.method = 'PATCH';
         options.body = JSON.stringify(params.data);
         break;
       case CREATE:
         url = `${apiUrl}/${resource}`;
-        options.headers.set('Prefer', 'return=representation');
+        setSingleResponseHeaders(options);
         options.method = 'POST';
         options.body = JSON.stringify(params.data);
         break;
       case DELETE:
-        url = `${apiUrl}/${resource}?id=eq.${params.id}`;
+        url = singleResourceUrl(resource, params);
         options.method = 'DELETE';
         break;
       default:
@@ -127,22 +139,29 @@ export default (apiUrl, httpClient = fetchJson) => {
      */
   const convertHTTPResponseToREST = (response, type, resource, params) => {
     const { headers, json } = response;
+
     switch (type) {
       case GET_LIST:
       case GET_MANY_REFERENCE: {
         if (!headers.has('content-range')) {
-          throw new Error('The Content-Range header is missing in the HTTP Response. The simple REST client expects responses for lists of resources to contain this header with the total number of results to build the pagination. If you are using CORS, did you declare Content-Range in the Access-Control-Expose-Headers header?');
+          throw new Error('The Content-Range header is missing in the HTTP Response. '
+            + 'The PostgREST client expects responses for lists of resources to contain '
+            + 'this header with the total number of results to build the pagination. '
+            + 'If you are using CORS, did you declare Content-Range in the '
+            + 'Access-Control-Expose-Headers header?');
         }
-        const maxInPage = parseInt(headers.get('content-range').split('/')[0].split('-').pop(), 10) + 1;
+        const rangeParts = headers.get('content-range').split('/');
+        const total = parseInt(rangeParts.pop(), 10)
+          || parseInt(rangeParts[0].split('-').pop(), 10) + 1;
         return {
-          data: json.map(x => x),
-          total: parseInt(headers.get('content-range').split('/').pop(), 10) || maxInPage,
+          data: json.slice(),
+          total,
         };
       }
       case CREATE:
-        return { ...params.data, id: json.id };
-      case UPDATE:
-        return { ...params.data, id: params.id };
+        return { data: { ...params.data, id: json.id } };
+      case DELETE:
+        return { data: {} }
       default:
         return { data: json };
     }

@@ -1,5 +1,5 @@
 {
-  "name": "@turbolent/aor-postgrest-client",
+  "name": "aor-postgrest-client",
   "version": "0.2.0",
   "description": "A PostgREST client for admin-on-rest",
   "main": "lib/index.js",

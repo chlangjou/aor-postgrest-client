@@ -1,5 +1,5 @@
 import { stringify } from "query-string";
-import { fetchJson } from "admin-on-rest/lib/util/fetch";
+import { fetchJson } from "react-admin/lib/util/fetch";
 import {
 	GET_LIST,
 	GET_ONE,
@@ -8,7 +8,7 @@ import {
 	CREATE,
 	UPDATE,
 	DELETE
-} from "admin-on-rest/lib/rest/types";
+} from "react-admin/lib/rest/types";
 
 /**
  * Maps admin-on-rest queries to a postgrest API

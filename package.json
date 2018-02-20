@@ -1,18 +1,29 @@
 {
 	"name": "aor-postgrest-client",
-	"version": "0.2.1",
+	"version": "0.3.0",
 	"description": "A PostgREST client for admin-on-rest",
 	"main": "lib/index.js",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
 		"lint": "eslint --ignore-path .gitignore src/*.js"
 	},
-	"files": ["LICENSE", "*.md", "lib", "src"],
+	"files": [
+		"LICENSE",
+		"*.md",
+		"lib",
+		"src"
+	],
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/turbolent/aor-postgres-client.git"
 	},
-	"keywords": ["reactjs", "react", "rest", "postgrest", "local"],
+	"keywords": [
+		"reactjs",
+		"react",
+		"rest",
+		"postgrest",
+		"local"
+	],
 	"author": "Thomas Bereknyei",
 	"contributors": [
 		"Sébastien Boulle",
@@ -22,9 +33,9 @@
 	],
 	"license": "MIT",
 	"bugs": {
-		"url": "https://github.com/turbolent/aor-postgres-client/issues"
+		"url": "https://github.com/tsingson/aor-postgres-client/issues"
 	},
-	"homepage": "https://github.com/turbolent/aor-postgres-client#readme",
+	"homepage": "https://github.com/tsingson/aor-postgres-client#readme",
 	"eslintConfig": {
 		"parser": "babel-eslint",
 		"extends": "airbnb",
@@ -37,16 +48,16 @@
 		"babel-cli": "^6.26.0",
 		"babel-eslint": "^8.2.1",
 		"babel-plugin-add-module-exports": "^0.2.1",
+		"babel-preset-env": "^1.6.1",
 		"babel-preset-stage-0": "^6.24.1",
 		"eslint": "^4.18.0",
 		"eslint-config-airbnb": "^16.1.0",
 		"eslint-plugin-import": "^2.8.0",
 		"eslint-plugin-jsx-a11y": "^6.0.3",
 		"eslint-plugin-react": "^7.6.1",
-		"babel-preset-env": "^1.6.1",
 		"react-scripts": "1.1.1"
 	},
 	"dependencies": {
-		"admin-on-rest": "^1.4.0"
+		"react-admin": "^2.0.0-beta2"
 	}
 }

@@ -8,7 +8,7 @@ import {
 	CREATE,
 	UPDATE,
 	DELETE
-} from "react-admin/lib/rest/types";
+} from "ra-core/lib/dataFetchActions";
 
 /**
  * Maps admin-on-rest queries to a postgrest API
